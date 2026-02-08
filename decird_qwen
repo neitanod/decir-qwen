@@ -10,8 +10,8 @@ LOG_FILE="$PID_DIR/daemon.log"
 VOICES_DIR="$HOME/robotin/apps/decir-qwen/voices"
 VOICE="${DECIRD_QWEN_VOICE:-$VOICES_DIR/Lionel.mp3}"
 
-# Directorio del script (para encontrar daemon.py)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+# Directorio del script (para encontrar daemon.py) - resuelve symlinks
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd -P)"
 
 # Función para verificar si un proceso está corriendo
 is_running() {

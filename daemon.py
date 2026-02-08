@@ -28,7 +28,8 @@ sys.stdout = old_stdout
 
 # Configuración
 TEXT_STREAM = os.path.expanduser("~/.decir_qwen/text_stream")
-VOICE = os.environ.get("DECIRD_QWEN_VOICE", os.path.expanduser("~/robotin/Lionel.mp3"))
+VOICES_DIR = os.path.expanduser("~/robotin/apps/decir-qwen/voices")
+VOICE = os.environ.get("DECIRD_QWEN_VOICE", os.path.join(VOICES_DIR, "Lionel.mp3"))
 
 def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)

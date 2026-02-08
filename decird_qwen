@@ -7,7 +7,8 @@ PID_FILE="$PID_DIR/daemon.pid"
 LOG_FILE="$PID_DIR/daemon.log"
 
 # Voz por defecto
-VOICE="${DECIRD_QWEN_VOICE:-$HOME/robotin/Lionel.mp3}"
+VOICES_DIR="$HOME/robotin/apps/decir-qwen/voices"
+VOICE="${DECIRD_QWEN_VOICE:-$VOICES_DIR/Lionel.mp3}"
 
 # Directorio del script (para encontrar daemon.py)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"

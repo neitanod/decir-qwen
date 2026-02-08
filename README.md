@@ -38,10 +38,18 @@ decird_qwen status
 decird_qwen stop
 ```
 
+## Voces incluidas
+
+El repo incluye 4 voces para clonación en `voices/`:
+- `Lionel.mp3` (default)
+- `Brian.mp3`
+- `Carlos.mp3`
+- `Claudio.mp3`
+
 ## Configuración
 
 Variables de entorno:
-- `DECIRD_QWEN_VOICE`: Ruta al archivo de audio de referencia para voice cloning (default: `~/robotin/Lionel.mp3`)
+- `DECIRD_QWEN_VOICE`: Ruta al archivo de audio de referencia para voice cloning (default: `voices/Lionel.mp3`)
 
 ## Rendimiento
 

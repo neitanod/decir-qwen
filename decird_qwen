@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# Definir las rutas
+TEXT_STREAM=~/.decir_qwen/text_stream
+PID_DIR=~/.decir_qwen
+PID_FILE="$PID_DIR/daemon.pid"
+LOG_FILE="$PID_DIR/daemon.log"
+
+# Voz por defecto
+VOICE="${DECIRD_QWEN_VOICE:-$HOME/robotin/Lionel.mp3}"
+
+# Directorio del script (para encontrar daemon.py)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
+# Función para verificar si un proceso está corriendo
+is_running() {
+    local pid_file=$1
+    if [ -f "$pid_file" ]; then
+        local pid=$(cat "$pid_file")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Función para matar un proceso
+kill_process() {
+    local pid_file=$1
+    if [ -f "$pid_file" ]; then
+        local pid=$(cat "$pid_file")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            kill "$pid" 2>/dev/null
+            sleep 0.5
+            if ps -p "$pid" > /dev/null 2>&1; then
+                kill -9 "$pid" 2>/dev/null
+            fi
+        fi
+        rm -f "$pid_file"
+    fi
+}
+
+# Función start
+start_daemon() {
+    if is_running "$PID_FILE"; then
+        echo "decird_qwen ya está corriendo"
+        return 1
+    fi
+
+    echo "Iniciando decird_qwen (cargando modelo, esto toma ~8s)..."
+
+    mkdir -p "$PID_DIR"
+    rm -f "${TEXT_STREAM}" 2>/dev/null
+    touch "${TEXT_STREAM}"
+
+    # Iniciar el daemon Python con el venv de qwen3-tts
+    QWEN_VENV="$HOME/apps/qwen3-tts/venv"
+    nohup "$QWEN_VENV/bin/python3" "$SCRIPT_DIR/daemon.py" >> "$LOG_FILE" 2>&1 &
+    echo $! > "$PID_FILE"
+    disown
+
+    # Esperar a que el modelo cargue
+    sleep 2
+    for i in {1..30}; do
+        if grep -q "Modelo cargado" "$LOG_FILE" 2>/dev/null; then
+            break
+        fi
+        sleep 0.5
+    done
+
+    if is_running "$PID_FILE"; then
+        echo "decird_qwen iniciado correctamente"
+        echo "  Voz: $VOICE"
+    else
+        echo "Error al iniciar decird_qwen"
+        cat "$LOG_FILE" 2>/dev/null | tail -5
+        stop_daemon
+        return 1
+    fi
+}
+
+# Función stop
+stop_daemon() {
+    echo "Deteniendo decird_qwen..."
+    kill_process "$PID_FILE"
+    echo "decird_qwen detenido"
+}
+
+# Función restart
+restart_daemon() {
+    stop_daemon
+    sleep 1
+    start_daemon
+}
+
+# Función status
+status_daemon() {
+    if is_running "$PID_FILE"; then
+        echo "decird_qwen está corriendo"
+        echo "  PID: $(cat $PID_FILE)"
+        echo "  Voz: $VOICE"
+        return 0
+    else
+        echo "decird_qwen no está corriendo"
+        return 1
+    fi
+}
+
+# Main
+case "$1" in
+    start)
+        start_daemon
+        ;;
+    stop)
+        stop_daemon
+        ;;
+    restart)
+        restart_daemon
+        ;;
+    status)
+        status_daemon
+        ;;
+    *)
+        echo "Uso: decird_qwen {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

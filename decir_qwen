@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ $# -gt 0 ]; then
+    echo "$@" >> ~/.decir_qwen/text_stream
+else
+    cat >> ~/.decir_qwen/text_stream
+fi

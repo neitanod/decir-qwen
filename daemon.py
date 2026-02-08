@@ -34,6 +34,27 @@ VOICE = os.environ.get("DECIRD_QWEN_VOICE", os.path.join(VOICES_DIR, "Lionel.mp3
 def log(msg):
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
+def rioplatense(text):
+    """Convierte y/ll a sh para acento rioplatense"""
+    import re
+    # ya ye yi yo yu -> sha she shi sho shu
+    # lla lle lli llo llu -> sha she shi sho shu
+    replacements = [
+        (r'[Yy]a', lambda m: 'Sha' if m.group()[0].isupper() else 'sha'),
+        (r'[Yy]e', lambda m: 'She' if m.group()[0].isupper() else 'she'),
+        (r'[Yy]i', lambda m: 'Shi' if m.group()[0].isupper() else 'shi'),
+        (r'[Yy]o', lambda m: 'Sho' if m.group()[0].isupper() else 'sho'),
+        (r'[Yy]u', lambda m: 'Shu' if m.group()[0].isupper() else 'shu'),
+        (r'[Ll]la', lambda m: 'Sha' if m.group()[0].isupper() else 'sha'),
+        (r'[Ll]le', lambda m: 'She' if m.group()[0].isupper() else 'she'),
+        (r'[Ll]li', lambda m: 'Shi' if m.group()[0].isupper() else 'shi'),
+        (r'[Ll]lo', lambda m: 'Sho' if m.group()[0].isupper() else 'sho'),
+        (r'[Ll]lu', lambda m: 'Shu' if m.group()[0].isupper() else 'shu'),
+    ]
+    for pattern, repl in replacements:
+        text = re.sub(pattern, repl, text)
+    return text
+
 def play_audio(wav_file):
     """Reproduce el audio usando paplay"""
     try:
@@ -81,6 +102,9 @@ def main():
 
                     try:
                         start = time.time()
+
+                        # Aplicar acento rioplatense
+                        text = rioplatense(text)
 
                         # Silenciar durante generación
                         sys.stdout = io.StringIO()
